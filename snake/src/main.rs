@@ -111,7 +111,8 @@ fn main() {
                     snake_growth
                         .label(SnakeMovement::Growth)
                         .after(SnakeMovement::Eating),
-                ),
+                )
+                .with_system(food_spawner.after(SnakeMovement::Eating)),
         )
         .add_system_set_to_stage(
             CoreStage::PostUpdate,
@@ -119,30 +120,31 @@ fn main() {
                 .with_system(position_translation)
                 .with_system(size_scaling),
         )
-        .add_system_set(
-            SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(1.0))
-                .with_system(food_spawner),
-        )
         .add_plugins(DefaultPlugins)
         .run();
 }
 
-fn food_spawner(mut commands: Commands) {
-    commands
-        .spawn_bundle(SpriteBundle {
-            sprite: Sprite {
-                color: FOOD_COLOR,
+fn food_spawner(
+    mut commands: Commands,
+    mut growth_reader: EventReader<GrowthEvent>,
+    food: Query<Entity, With<Food>>,
+) {
+    if growth_reader.iter().next().is_some() || food.is_empty() {
+        commands
+            .spawn_bundle(SpriteBundle {
+                sprite: Sprite {
+                    color: FOOD_COLOR,
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Food)
-        .insert(Position {
-            x: (random::<f32>() * ARENA_WIDTH as f32) as i32,
-            y: (random::<f32>() * ARENA_HEIGHT as f32) as i32,
-        })
-        .insert(Size::square(0.8));
+            })
+            .insert(Food)
+            .insert(Position {
+                x: (random::<f32>() * ARENA_WIDTH as f32) as i32,
+                y: (random::<f32>() * ARENA_HEIGHT as f32) as i32,
+            })
+            .insert(Size::square(0.8));
+    }
 }
 
 fn game_over(
