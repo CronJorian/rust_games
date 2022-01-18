@@ -89,7 +89,7 @@ fn main() {
         .insert_resource(SnakeSegments::default())
         .insert_resource(LastTailPosition::default())
         .add_startup_system(setup_camera)
-        .add_startup_system(spawn_snake)
+        .add_startup_system(snake_spawner)
         .add_event::<GameOverEvent>()
         .add_event::<GrowthEvent>()
         .add_system(
@@ -156,7 +156,7 @@ fn game_over(
         for entity in food.iter().chain(segments.iter()) {
             commands.entity(entity).despawn();
         }
-        spawn_snake(commands, segments_res);
+        snake_spawner(commands, segments_res);
     }
 }
 
@@ -216,7 +216,7 @@ fn snake_growth(
     if growth_reader.iter().next().is_some() {
         segments
             .0
-            .push(spawn_snake_segment(commands, last_tail_position.0.unwrap()));
+            .push(snake_segment_spawn(commands, last_tail_position.0.unwrap()));
     }
 }
 
@@ -286,7 +286,7 @@ fn snake_movement_input(keyboard_input: Res<Input<KeyCode>>, mut heads: Query<&m
     }
 }
 
-fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
+fn snake_spawner(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
     segments.0 = vec![
         commands
             .spawn_bundle(SpriteBundle {
@@ -303,11 +303,11 @@ fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
             .insert(Position { x: 3, y: 3 })
             .insert(Size::square(0.8))
             .id(),
-        spawn_snake_segment(commands, Position { x: 3, y: 2 }),
+        snake_segment_spawn(commands, Position { x: 3, y: 2 }),
     ];
 }
 
-fn spawn_snake_segment(mut commands: Commands, position: Position) -> Entity {
+fn snake_segment_spawn(mut commands: Commands, position: Position) -> Entity {
     commands
         .spawn_bundle(SpriteBundle {
             sprite: Sprite {
