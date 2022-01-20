@@ -10,6 +10,7 @@ const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 
 #[derive(PartialEq, Clone, Copy)]
 enum Direction {
+    None,
     Left,
     Up,
     Right,
@@ -19,6 +20,7 @@ enum Direction {
 impl Direction {
     fn opposite(self) -> Self {
         match self {
+            Self::None => Self::None,
             Self::Down => Self::Up,
             Self::Left => Self::Right,
             Self::Right => Self::Left,
@@ -249,6 +251,7 @@ fn snake_movement(
             Direction::Up => {
                 head_position.y += 1;
             }
+            Direction::None => {}
         };
         if head_position.x < 0
             || head_position.y < 0
@@ -299,7 +302,7 @@ fn snake_spawner(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
                 ..Default::default()
             })
             .insert(SnakeHead {
-                direction: Direction::Up,
+                direction: Direction::None,
             })
             .insert(SnakeSegment)
             .insert(Position { x: 3, y: 3 })
