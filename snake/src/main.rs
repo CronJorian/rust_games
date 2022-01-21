@@ -1,5 +1,5 @@
 use bevy::{core::FixedTimestep, prelude::*};
-use rand::prelude::random;
+use rand::random;
 
 const ARENA_HEIGHT: u32 = 10;
 const ARENA_WIDTH: u32 = 10;
@@ -130,6 +130,7 @@ fn food_spawner(
     mut commands: Commands,
     mut growth_reader: EventReader<GrowthEvent>,
     food: Query<Entity, With<Food>>,
+    segments: Query<&Position, With<SnakeSegment>>,
 ) {
     if growth_reader.iter().next().is_some() || food.is_empty() {
         commands
@@ -141,11 +142,24 @@ fn food_spawner(
                 ..Default::default()
             })
             .insert(Food)
-            .insert(Position {
-                x: (random::<f32>() * ARENA_WIDTH as f32) as i32,
-                y: (random::<f32>() * ARENA_HEIGHT as f32) as i32,
-            })
+            .insert(get_available_position(segments))
             .insert(Size::square(0.8));
+    }
+}
+
+fn get_available_position(segments: Query<&Position, With<SnakeSegment>>) -> Position {
+    loop {
+        let position = Position {
+            x: (random::<f32>() * ARENA_WIDTH as f32) as i32,
+            y: (random::<f32>() * ARENA_HEIGHT as f32) as i32,
+        };
+        if !segments.iter().any(|segment_position| {
+            segment_position.x == position.x && segment_position.y == position.y
+        }) {
+            return position;
+        } else {
+            println!("no")
+        }
     }
 }
 
