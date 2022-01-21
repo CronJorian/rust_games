@@ -1,5 +1,6 @@
 use bevy::{core::FixedTimestep, prelude::*};
 use rand::random;
+use std::process;
 
 const ARENA_HEIGHT: u32 = 10;
 const ARENA_WIDTH: u32 = 10;
@@ -182,13 +183,17 @@ fn position_translation(windows: Res<Windows>, mut query: Query<(&Position, &mut
         pos / bound_game * bound_window - (bound_window / 2.) + (tile_size / 2.)
     }
 
-    let window = windows.get_primary().unwrap(); // TODO: Remove unwrap and use matching pattern for Some/None
-    for (position, mut transform) in query.iter_mut() {
-        transform.translation = Vec3::new(
-            convert(position.x as f32, window.width(), ARENA_WIDTH as f32),
-            convert(position.y as f32, window.height(), ARENA_HEIGHT as f32),
-            0.,
-        )
+    match windows.get_primary() {
+        Some(window) => {
+            for (position, mut transform) in query.iter_mut() {
+                transform.translation = Vec3::new(
+                    convert(position.x as f32, window.width(), ARENA_WIDTH as f32),
+                    convert(position.y as f32, window.height(), ARENA_HEIGHT as f32),
+                    0.,
+                )
+            }
+        }
+        None => {}
     }
 }
 
@@ -294,6 +299,8 @@ fn snake_movement_input(keyboard_input: Res<Input<KeyCode>>, mut heads: Query<&m
                 Direction::Right
             } else if keyboard_input.any_pressed(vec![KeyCode::Up, KeyCode::W].into_iter()) {
                 Direction::Up
+            } else if keyboard_input.pressed(KeyCode::Escape) {
+                process::exit(1)
             } else {
                 head.direction
             };
