@@ -157,8 +157,6 @@ fn get_available_position(segments: Query<&Position, With<SnakeSegment>>) -> Pos
             segment_position.x == position.x && segment_position.y == position.y
         }) {
             return position;
-        } else {
-            println!("no")
         }
     }
 }
